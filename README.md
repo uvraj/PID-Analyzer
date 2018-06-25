@@ -64,3 +64,10 @@ Happy tuning,
 
 Flo
 
+## Changes in this fork
+
+* project restructured from monolithic into modular
+* ability to load CSV exported from Blackbox Explorer
+* refactored code to (more or less) follow Python conventions (WIP)
+* add config file (`config.ini`) to set the path for `blackbox_decode` permanently
+* use different default names for `blackbox_decode` executable on different platforms
