@@ -71,3 +71,21 @@ Flo
 * refactored code to (more or less) follow Python conventions (WIP)
 * add config file (`config.ini`) to set the path for `blackbox_decode` permanently
 * use different default names for `blackbox_decode` executable on different platforms
+
+## Installation in a virtual environment
+
+Installing in a virtual environment means that the dependencies will be installed in a local directory instead of globally on the system. It's a less obtrusive method which may be preferred if you are not using the installed packages in other scripts or you need to have different versions of the same package for different scripts.
+
+```
+# create the virtual env in the working directory
+python3 -m venv env
+# activate the virtual env
+. env/bin/activate
+# optionally update package management tools
+pip install -U pip wheel setuptools
+# install dependencies locally
+pip install -r requirements.txt
+```
+
+The above instructions is for Linux(-like) systems. For a more complete guide, please see the official [documentation for virtual environments](https://docs.python.org/3/library/venv.html).
+
