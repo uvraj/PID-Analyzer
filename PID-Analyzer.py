@@ -13,10 +13,8 @@ from ast import literal_eval
 
 from matplotlib import pyplot, pyplot as plt
 
-from pidanalyzer.logger import log
 from pidanalyzer.common import *
-from pidanalyzer import common, BANNER
-from pidanalyzer.loader_resolver import resolve_loader
+from pidanalyzer import common, loaders, BANNER
 from pidanalyzer.csv_log import CsvLog
 
 
@@ -24,7 +22,7 @@ def analyze_file(path: str, plot_name: str, hide: bool, noise_bounds: list):
     tmp_path = os.path.join(os.path.dirname(path), plot_name)
     if not os.path.isdir(tmp_path):
         os.makedirs(tmp_path)
-    loader = resolve_loader(path, plot_name)
+    loader = loaders.resolve(path, plot_name)
     for i, header in enumerate(loader.headers):
         CsvLog(plot_name, header, noise_bounds, loader.data[i])
         if hide:

@@ -1,6 +1,9 @@
 import os
 from abc import ABCMeta, abstractmethod
-from typing import Tuple
+from typing import Iterator, Tuple, Type
+
+from .. import loaders
+from ..errors import LoaderNotFoundError
 
 
 class Loader(metaclass=ABCMeta):
@@ -60,3 +63,26 @@ class Loader(metaclass=ABCMeta):
     @property
     def data(self) -> Tuple[dict]:
         return tuple(self._data)
+
+
+def _find_loaders() -> Iterator[Type[Loader]]:
+    """ly
+    :return: an iterator of the available Loader classes
+    """
+    for key, value in loaders.__dict__.items():
+        if value.__class__ is not Loader and isinstance(value, Loader.__class__):
+            yield value
+
+
+def resolve(path: str, tmp_subdir: str) -> Loader:
+    """Tries to find the appropriate Loader class for a file.
+
+    :param path: path to the file to inspect
+    :param tmp_subdir: name of temp directory
+    :return: the resolved Loader
+    :raise LoaderNotFoundError: raised when an appropriate Loader wasn't found
+    """
+    for loader in _find_loaders():
+        if loader.is_applicable(path):
+            return loader(path, tmp_subdir)
+    raise LoaderNotFoundError(path)

@@ -3,7 +3,7 @@ from matplotlib import colors as colors, pyplot as plt, rcParams
 from matplotlib.gridspec import GridSpec
 
 from . import BANNER
-from .logger import log
+from .common import log
 from .trace import Trace, to_mask
 
 

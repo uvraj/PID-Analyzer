@@ -1,11 +1,9 @@
-import os
 import subprocess
 from typing import Tuple
 
 from .blackbox_decode_csv_loader import BlackboxDecodeCsvLoader
 from .loader import Loader
-from ..fields import FIELDS_MAP, headerdict
-from ..logger import log
+from ..common import *
 
 # minimum size of a log to parse in bytes
 LOG_MIN_BYTES = 500000
