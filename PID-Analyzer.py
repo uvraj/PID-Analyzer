@@ -7,51 +7,36 @@
 # ----------------------------------------------------------------------------------
 
 import argparse
-import configparser
-import os
-import platform
 import sys
 import time
 from ast import literal_eval
 
-from matplotlib import pyplot
+from matplotlib import pyplot, pyplot as plt
 
-from pidanalyzer import BANNER
-from pidanalyzer.bb_log import BbLog
 from pidanalyzer.logger import log
-from pidanalyzer.utils import strip_quotes
+from pidanalyzer.common import *
+from pidanalyzer import common, BANNER
+from pidanalyzer.loader_resolver import resolve_loader
+from pidanalyzer.csv_log import CsvLog
 
-CONFIG_FILE = "config.ini"
-DEFAULT_NOISE_BOUNDS = [[1., 10.1], [1., 100.], [1., 100.], [0., 4.]]
 
-
-def run_analysis(log_file_path, plot_name, blackbox_decode, show, noise_bounds):
-    BbLog(log_file_path, plot_name, blackbox_decode, show, noise_bounds)
+def analyze_file(path: str, plot_name: str, hide: bool, noise_bounds: list):
+    tmp_path = os.path.join(os.path.dirname(path), plot_name)
+    if not os.path.isdir(tmp_path):
+        os.makedirs(tmp_path)
+    loader = resolve_loader(path, plot_name)
+    for i, header in enumerate(loader.headers):
+        CsvLog(plot_name, header, noise_bounds, loader.data[i])
+        if hide:
+            plt.cla()
+            plt.clf()
+    loader.clean_up()
     log.info('Analysis complete, showing plot. (Close plot to exit.)')
 
 
-def clean_path(path: str) -> str:
-    return os.path.abspath(os.path.expanduser(strip_quotes(path)))
-
-
-def get_default_blackbox_decode_path() -> str:
-    cwd = os.path.dirname(__file__)
-    config_file_path = os.path.join(cwd, CONFIG_FILE)
-    if not os.path.exists(config_file_path):
-        system = platform.system()
-        if system == 'Windows':
-            executable = 'Blackbox_decode.exe'
-        else:
-            executable = 'blackbox_decode'
-        return os.path.join(cwd, executable)
-    config = configparser.ConfigParser()
-    config.read(config_file_path)
-    return config['paths']['blackbox_decode']
-
-
-def arguments_mode(args):
+def arguments_mode(args) -> int:
     for log_path in args.log_paths:
-        run_analysis(clean_path(log_path), args.name, args.blackbox_decode, not args.hide, args.noise_bounds)
+        analyze_file(clean_path(log_path), args.name, args.hide, args.noise_bounds)
     if not args.hide:
         pyplot.show()
     else:
@@ -60,7 +45,7 @@ def arguments_mode(args):
     return 0
 
 
-def interactive_mode(args):
+def interactive_mode(args) -> int:
     while True:
         log.info('Interactive mode: Enter log file, or type close when done.')
 
@@ -85,7 +70,7 @@ def interactive_mode(args):
 
         for path in raw_paths:
             if os.path.isfile(clean_path(path)):
-                run_analysis(clean_path(path), name, args.blackbox_decode, args.show, args.noise_bounds)
+                analyze_file(clean_path(path), name, args.show, args.noise_bounds)
             else:
                 log.info('No valid input path!')
                 return 1
@@ -107,7 +92,7 @@ def main(args) -> int:
              'your BBL file) at %s. You may need to install it from '
              'https://github.com/cleanflight/blackbox-tools/releases.')
             % blackbox_decode_path)
-
+    common.BLACKBOX_DECODE_PATH = blackbox_decode_path
     log.info('Decoding with %r' % blackbox_decode_path)
     log.info(BANNER)
 
@@ -119,18 +104,16 @@ def main(args) -> int:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-l', '--log', action='append', dest='log_paths',
-                        help='Log file(s) to analyse; can be specified multiple times. Omit for interactive prompt.')
-    parser.add_argument('-n', '--name', default='tmp', help='Plot name.')
-    parser.add_argument('--blackbox_decode',
-                        default=get_default_blackbox_decode_path(),
-                        help='Path to Blackbox_decode.exe.')
+    parser.add_argument(action='append', dest='log_paths', metavar="LOG_PATHS",
+                        help='log file(s) to analyze or omit for interactive prompt')
+    parser.add_argument('-n', '--name', default='tmp', help='plot name')
+    parser.add_argument('--blackbox_decode', metavar="PATH", default=get_default_blackbox_decode_path(),
+                        help='path to blackbox_decode tool')
     parser.add_argument('-d', '--hide', action='store_true',
-                        help='hide plot window when done.')
-    parser.add_argument('-b', '--noise-bounds',
-                        default=''.join(repr(DEFAULT_NOISE_BOUNDS).split(' ')),
+                        help='hide plot window when done')
+    parser.add_argument('-b', '--noise-bounds', default=''.join(repr(DEFAULT_NOISE_BOUNDS).split(' ')),
                         type=literal_eval,
-                        help='bounds of plots in noise analysis. use "auto" for autoscaling.')
+                        help='bounds of plots in noise analysis (use "auto" for autoscaling)')
 
     cli_args = parser.parse_args()
 

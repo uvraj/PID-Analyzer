@@ -8,5 +8,5 @@ venv/
 config.ini
 *.csv
 *.event
-blackbox_decode*
-blackbox_decode.*
+/blackbox_decode*
+/blackbox_decode.*

@@ -1,26 +1,10 @@
 import numpy as np
-from matplotlib import rcParams, pyplot as plt, colors as colors
+from matplotlib import colors as colors, pyplot as plt, rcParams
 from matplotlib.gridspec import GridSpec
-from pandas import read_csv
 
-from pidanalyzer import BANNER
-from pidanalyzer.logger import log
-from pidanalyzer.trace import Trace, to_mask
-
-# keycheck for 'usecols' only reads usefull traces, uncomment if needed
-CSV_FIELDS = ['time (us)', 'time',
-              'rcCommand[0]', 'rcCommand[1]', 'rcCommand[2]', 'rcCommand[3]',
-              'axisP[0]', 'axisP[1]', 'axisP[2]',
-              'axisI[0]', 'axisI[1]', 'axisI[2]',
-              'axisD[0]', 'axisD[1]', 'axisD[2]',
-              'gyroADC[0]', 'gyroADC[1]', 'gyroADC[2]',
-              'gyroData[0]', 'gyroData[1]', 'gyroData[2]',
-              'ugyroADC[0]', 'ugyroADC[1]', 'ugyroADC[2]',
-              # 'accSmooth[0]','accSmooth[1]', 'accSmooth[2]',
-              'debug[0]', 'debug[1]', 'debug[2]', 'debug[3]',
-              # 'motor[0]', 'motor[1]', 'motor[2]', 'motor[3]',
-              # 'energyCumulative (mAh)','vbatLatest (V)', 'amperageLatest (A)'
-              ]
+from . import BANNER
+from .logger import log
+from .trace import Trace, to_mask
 
 
 def check_lims_list(lims):
@@ -37,12 +21,13 @@ def check_lims_list(lims):
 
 class CsvLog:
 
-    def __init__(self, path, name, headdict, noise_bounds):
+    def __init__(self, name: str, header: dict, noise_bounds: list, data: dict):
+        path = header["tempFile"]
         log.info("CSV file: " + path)
         self.file = path
         self.name = name
-        self.headdict = headdict
-        self.data = self.readcsv(self.file)
+        self.header = header
+        self.data = data
 
         log.info('Processing:')
         self.traces = self.find_traces(self.data)
@@ -55,7 +40,7 @@ class CsvLog:
         rcParams.update({'font.size': 9})
 
         log.info('Making noise plot...')
-        title = 'Noise plot: Log number: {}{}{}'.format(self.headdict['logNum'], (10 * ' '), self.file)
+        title = 'Noise plot: Log number: {}{}{}'.format(self.header['logNum'], (10 * ' '), self.file)
         fig = plt.figure(title, figsize=(16, 8))
         # gridspec devides window into 25 horizontal, 31 vertical fields
         gs1 = GridSpec(25, 3 * 10 + 2, wspace=0.6, hspace=0.7, left=0.04, right=1., bottom=0.05, top=0.97)
@@ -183,7 +168,7 @@ class CsvLog:
                 ax21.bar(tr.throt_scale[:-1], tr.throt_hist * 100., width=1., align='edge', color='black', alpha=0.2,
                          label='throttle distribution')
                 axes_d[0].get_shared_x_axes().join(axes_d[0], ax21)
-                ax21.vlines(self.headdict['tpa_percent'], 0., 100., label='tpa', colors='red', alpha=0.5)
+                ax21.vlines(self.header['tpa_percent'], 0., 100., label='tpa', colors='red', alpha=0.5)
                 ax21.grid()
                 ax21.set_ylim([0., np.max(tr.throt_hist) * 100. * 1.1])
                 ax21.set_xlabel('throttle in %')
@@ -192,7 +177,7 @@ class CsvLog:
                 handles, labels = ax21.get_legend_handles_labels()
                 ax21.legend(handles[::-1], labels[::-1])
                 ax22.fill_between(tr.time, 0., tr.throttle, label='throttle input', facecolors='black', alpha=0.2)
-                ax22.hlines(self.headdict['tpa_percent'], tr.time[0], tr.time[-1], label='tpa', colors='red', alpha=0.5)
+                ax22.hlines(self.header['tpa_percent'], tr.time[0], tr.time[-1], label='tpa', colors='red', alpha=0.5)
 
                 ax22.set_ylabel('throttle in %')
                 ax22.legend()
@@ -225,16 +210,16 @@ class CsvLog:
 
         meanfreq = 1. / (traces[0].time[1] - traces[0].time[0])
         ax4 = plt.subplot(gs1[12, -1])
-        t = BANNER + "| Betaflight: Version " + self.headdict['version'] + ' | Craftname: ' + self.headdict[
+        t = BANNER + "| Betaflight: Version " + self.header['version'] + ' | Craftname: ' + self.header[
             'craftName'] + \
-            ' | meanFreq: ' + str(int(meanfreq)) + ' | rcRate/Expo: ' + self.headdict['rcRate'] + '/' + self.headdict[
-                'rcExpo'] + '\nrcYawRate/Expo: ' + self.headdict['rcYawRate'] + '/' \
-            + self.headdict['rcYawExpo'] + ' | deadBand: ' + self.headdict['deadBand'] + ' | yawDeadBand: ' + \
-            self.headdict['yawDeadBand'] \
-            + ' | Throttle min/tpa/max: ' + self.headdict['minThrottle'] + '/' + self.headdict['tpa_breakpoint'] + '/' + \
-            self.headdict['maxThrottle'] \
-            + ' | dynThrPID: ' + self.headdict['dynThrottle'] + '| D-TermSP: ' + self.headdict[
-                'dTermSetPoint'] + '| vbatComp: ' + self.headdict['vbatComp'] + ' | debug ' + self.headdict[
+            ' | meanFreq: ' + str(int(meanfreq)) + ' | rcRate/Expo: ' + self.header['rcRate'] + '/' + self.header[
+                'rcExpo'] + '\nrcYawRate/Expo: ' + self.header['rcYawRate'] + '/' \
+            + self.header['rcYawExpo'] + ' | deadBand: ' + self.header['deadBand'] + ' | yawDeadBand: ' + \
+            self.header['yawDeadBand'] \
+            + ' | Throttle min/tpa/max: ' + self.header['minThrottle'] + '/' + self.header['tpa_breakpoint'] + '/' + \
+            self.header['maxThrottle'] \
+            + ' | dynThrPID: ' + self.header['dynThrottle'] + '| D-TermSP: ' + self.header[
+                'dTermSetPoint'] + '| vbatComp: ' + self.header['vbatComp'] + ' | debug ' + self.header[
                 'debug_mode']
 
         ax4.text(0, 0, t, ha='left', va='center', rotation=90, color='grey', alpha=0.5, fontsize=textsize)
@@ -244,22 +229,22 @@ class CsvLog:
         ax5r = plt.subplot(gs1[:1, 27:30])
         ax5l.axis('off')
         ax5r.axis('off')
-        filt_settings_l = 'G lpf type: ' + self.headdict['gyro_lpf'] + ' at ' + self.headdict[
+        filt_settings_l = 'G lpf type: ' + self.header['gyro_lpf'] + ' at ' + self.header[
             'gyro_lowpass_hz'] + '\n' + \
-                          'G notch at: ' + self.headdict['gyro_notch_hz'] + ' cut ' + self.headdict[
+                          'G notch at: ' + self.header['gyro_notch_hz'] + ' cut ' + self.header[
                               'gyro_notch_cutoff'] + '\n' \
-                                                     'gyro lpf 2: ' + self.headdict['gyro_lowpass_type']
-        filt_settings_r = '| D lpf type: ' + self.headdict['dterm_filter_type'] + ' at ' + self.headdict[
+                                                     'gyro lpf 2: ' + self.header['gyro_lowpass_type']
+        filt_settings_r = '| D lpf type: ' + self.header['dterm_filter_type'] + ' at ' + self.header[
             'dterm_lpf_hz'] + '\n' + \
-                          '| D notch at: ' + self.headdict['dterm_notch_hz'] + ' cut ' + self.headdict[
+                          '| D notch at: ' + self.header['dterm_notch_hz'] + ' cut ' + self.header[
                               'dterm_notch_cutoff'] + '\n' + \
-                          '| Yaw lpf at: ' + self.headdict['yaw_lpf_hz']
+                          '| Yaw lpf at: ' + self.header['yaw_lpf_hz']
 
         ax5l.text(0, 0, filt_settings_l, ha='left', fontsize=textsize)
         ax5r.text(0, 0, filt_settings_r, ha='left', fontsize=textsize)
 
         log.info('Saving as image...')
-        plt.savefig(self.file[:-13] + self.name + '_' + str(self.headdict['logNum']) + '_noise.png')
+        plt.savefig(self.file[:-13] + self.name + '_' + str(self.header['logNum']) + '_noise.png')
         return fig
 
     def plot_all_resp(self, traces, style='ra'):  # style='raw' for response vs. time in color plot
@@ -267,7 +252,7 @@ class CsvLog:
         titelsize = 10
         rcParams.update({'font.size': 9})
         log.info('Making PID plot...')
-        fig = plt.figure('Response plot: Log number: ' + self.headdict['logNum'] + '          ' + self.file,
+        fig = plt.figure('Response plot: Log number: ' + self.header['logNum'] + '          ' + self.file,
                          figsize=(16, 8))
         # gridspec devides window into 24 horizontal, 3*10 vertical fields
         gs1 = GridSpec(24, 3 * 10, wspace=0.6, hspace=0.7, left=0.04, right=1., bottom=0.05, top=0.97)
@@ -286,7 +271,7 @@ class CsvLog:
             plt.setp(ax0.get_xticklabels(), visible=False)
 
             ax1 = plt.subplot(gs1[6:8, i * 10:i * 10 + 9], sharex=ax0)
-            plt.hlines(self.headdict['tpa_percent'], tr.time[0], tr.time[-1], label='tpa', colors='red', alpha=0.5)
+            plt.hlines(self.header['tpa_percent'], tr.time[0], tr.time[-1], label='tpa', colors='red', alpha=0.5)
             plt.fill_between(tr.time, 0., tr.throttle, label='throttle', color='grey', alpha=0.2)
             plt.ylabel('throttle %')
             ax1.get_yaxis().set_label_coords(-0.1, 0.5)
@@ -326,7 +311,7 @@ class CsvLog:
                          levels=np.linspace(0, 1, 20, dtype=np.float64))
             plt.plot(tr.time_resp, tr.resp_low[0],
                      label=tr.name + ' step response ' + '(<' + str(int(Trace.threshold)) + ') '
-                           + ' PID ' + self.headdict[tr.name + 'PID'])
+                           + ' PID ' + self.header[tr.name + 'PID'])
 
             if tr.high_mask.sum() > 0:
                 theCM = plt.cm.get_cmap('Oranges')
@@ -337,7 +322,7 @@ class CsvLog:
                              levels=np.linspace(0, 1, 20, dtype=np.float64))
                 plt.plot(tr.time_resp, tr.resp_high[0],
                          label=tr.name + ' step response ' + '(>' + str(int(Trace.threshold)) + ') '
-                               + ' PID ' + self.headdict[tr.name + 'PID'])
+                               + ' PID ' + self.header[tr.name + 'PID'])
             plt.xlim([-0.001, 0.501])
 
             plt.legend(loc=1)
@@ -350,21 +335,21 @@ class CsvLog:
 
         meanfreq = 1. / (traces[0].time[1] - traces[0].time[0])
         ax4 = plt.subplot(gs1[12, -1])
-        t = BANNER + " | Betaflight: Version " + self.headdict['version'] + ' | Craftname: ' + self.headdict[
+        t = BANNER + " | Betaflight: Version " + self.header['version'] + ' | Craftname: ' + self.header[
             'craftName'] + \
-            ' | meanFreq: ' + str(int(meanfreq)) + ' | rcRate/Expo: ' + self.headdict['rcRate'] + '/' + self.headdict[
-                'rcExpo'] + '\nrcYawRate/Expo: ' + self.headdict['rcYawRate'] + '/' \
-            + self.headdict['rcYawExpo'] + ' | deadBand: ' + self.headdict['deadBand'] + ' | yawDeadBand: ' + \
-            self.headdict['yawDeadBand'] \
-            + ' | Throttle min/tpa/max: ' + self.headdict['minThrottle'] + '/' + self.headdict['tpa_breakpoint'] + '/' + \
-            self.headdict['maxThrottle'] \
-            + ' | dynThrPID: ' + self.headdict['dynThrottle'] + '| D-TermSP: ' + self.headdict[
-                'dTermSetPoint'] + '| vbatComp: ' + self.headdict['vbatComp']
+            ' | meanFreq: ' + str(int(meanfreq)) + ' | rcRate/Expo: ' + self.header['rcRate'] + '/' + self.header[
+                'rcExpo'] + '\nrcYawRate/Expo: ' + self.header['rcYawRate'] + '/' \
+            + self.header['rcYawExpo'] + ' | deadBand: ' + self.header['deadBand'] + ' | yawDeadBand: ' + \
+            self.header['yawDeadBand'] \
+            + ' | Throttle min/tpa/max: ' + self.header['minThrottle'] + '/' + self.header['tpa_breakpoint'] + '/' + \
+            self.header['maxThrottle'] \
+            + ' | dynThrPID: ' + self.header['dynThrottle'] + '| D-TermSP: ' + self.header[
+                'dTermSetPoint'] + '| vbatComp: ' + self.header['vbatComp']
 
         plt.text(0, 0, t, ha='left', va='center', rotation=90, color='grey', alpha=0.5, fontsize=textsize)
         ax4.axis('off')
         log.info('Saving as image...')
-        plt.savefig(self.file[:-13] + self.name + '_' + str(self.headdict['logNum']) + '_response.png')
+        plt.savefig(self.file[:-13] + self.name + '_' + str(self.header['logNum']) + '_response.png')
         return fig
 
     def __analyze(self) -> list:
@@ -374,62 +359,11 @@ class CsvLog:
             analyzed.append(Trace(t))
         return analyzed
 
-    def readcsv(self, path):
-        log.info('Reading: Log ' + str(self.headdict['logNum']))
-        datdic = {}
-        data = read_csv(path, header=0, skipinitialspace=1, usecols=lambda k: k in CSV_FIELDS, dtype=np.float64)
-        try:
-            datdic.update({'time_us': data['time (us)'].values * 1e-6})
-        except KeyError:
-            # support for CSV exported from Blackbox Explorer
-            datdic.update({'time_us': data['time'].values * 1e-6})
-        datdic.update({'throttle': data['rcCommand[3]'].values})
-
-        for i in ['0', '1', '2']:
-            datdic.update({'rcCommand' + i: data['rcCommand[' + i + ']'].values})
-            # datdic.update({'PID loop in' + i: data['axisP[' + i + ']'].values})
-            try:
-                datdic.update({'debug' + i: data['debug[' + i + ']'].values})
-            except:
-                log.warning('No debug[' + str(i) + '] trace found!')
-                datdic.update({'debug' + i: np.zeros_like(data['rcCommand[' + i + ']'].values)})
-
-            # get P trace (including case of missing trace)
-            try:
-                datdic.update({'PID loop in' + i: data['axisP[' + i + ']'].values})
-            except:
-                log.warning('No P[' + str(i) + '] trace found!')
-                datdic.update({'PID loop in' + i: np.zeros_like(data['rcCommand[' + i + ']'].values)})
-
-            try:
-                datdic.update({'d_err' + i: data['axisD[' + i + ']'].values})
-            except:
-                log.warning('No D[' + str(i) + '] trace found!')
-                datdic.update({'d_err' + i: np.zeros_like(data['rcCommand[' + i + ']'].values)})
-
-            try:
-                datdic.update({'I_term' + i: data['axisI[' + i + ']'].values})
-            except:
-                if i < 2:
-                    log.warning('No I[' + str(i) + '] trace found!')
-                datdic.update({'I_term' + i: np.zeros_like(data['rcCommand[' + i + ']'].values)})
-
-            datdic.update({'PID sum' + i: datdic['PID loop in' + i] + datdic['I_term' + i] + datdic['d_err' + i]})
-            if 'gyroADC[0]' in data.keys():
-                datdic.update({'gyroData' + i: data['gyroADC[' + i + ']'].values})
-            elif 'gyroData[0]' in data.keys():
-                datdic.update({'gyroData' + i: data['gyroData[' + i + ']'].values})
-            elif 'ugyroADC[0]' in data.keys():
-                datdic.update({'gyroData' + i: data['ugyroADC[' + i + ']'].values})
-            else:
-                log.warning('No gyro trace found!')
-        return datdic
-
     def find_traces(self, dat):
         time = self.data['time_us']
         throttle = dat['throttle']
 
-        throt = ((throttle - 1000.) / (float(self.headdict['maxThrottle']) - 1000.)) * 100.
+        throt = ((throttle - 1000.) / (float(self.header['maxThrottle']) - 1000.)) * 100.
 
         traces = [{'name': 'roll'}, {'name': 'pitch'}, {'name': 'yaw'}]
 
@@ -441,16 +375,16 @@ class CsvLog:
             dic.update({'PIDsum': dat['PID sum' + str(i)]})
             dic.update({'d_err': dat['d_err' + str(i)]})
             dic.update({'debug': dat['debug' + str(i)]})
-            if 'KISS' in self.headdict['fwType']:
+            if 'KISS' in self.header['fwType']:
                 dic.update({'P': 1.})
-                self.headdict.update({'tpa_percent': 0.})
-            elif 'Raceflight' in self.headdict['fwType']:
+                self.header.update({'tpa_percent': 0.})
+            elif 'Raceflight' in self.header['fwType']:
                 dic.update({'P': 1.})
-                self.headdict.update({'tpa_percent': 0.})
+                self.header.update({'tpa_percent': 0.})
 
             else:
-                dic.update({'P': float((self.headdict[dic['name'] + 'PID']).split(',')[0])})
-                self.headdict.update({'tpa_percent': (float(self.headdict['tpa_breakpoint']) - 1000.) / 10.})
+                dic.update({'P': float((self.header[dic['name'] + 'PID']).split(',')[0])})
+                self.header.update({'tpa_percent': (float(self.header['tpa_breakpoint']) - 1000.) / 10.})
 
             dic.update({'throttle': throt})
 
