@@ -23,9 +23,8 @@ class BblLoader(Loader):
         return ".bbl" == os.path.splitext(path)[1].lower()
 
     def _read_headers(self, path: str) -> Tuple[dict]:
-        from ..common import BLACKBOX_DECODE_PATH
         result = []
-        csvfiles = self._bbl_to_csv(BLACKBOX_DECODE_PATH)
+        csvfiles = self._bbl_to_csv()
         for i, csvpath in enumerate(csvfiles):
             _, ext = os.path.splitext(csvpath)
             headers = headerdict(csvpath.replace(ext, ".01.csv"), i)
@@ -48,7 +47,7 @@ class BblLoader(Loader):
             result.append(BlackboxDecodeCsvLoader(headers["tempFile"], self.tmp_subdir).data[0])
         return tuple(result)
 
-    def _bbl_to_csv(self, blackbox_decode_path: str) -> list:
+    def _bbl_to_csv(self) -> list:
         """Splits out one BBL per recorded session and converts each to CSV.
 
         :return: a list containing paths of the resulting CSV files
@@ -74,12 +73,13 @@ class BblLoader(Loader):
                 newfile.write(firstline + split[i])
             bbl_sessions.append(temp_path)
 
+        from ..common import BLACKBOX_DECODE_PATH
         loglist = []
         for bbl_session in bbl_sessions:
             size_bytes = os.path.getsize(os.path.join(self.tmp_path, bbl_session))
             if size_bytes > LOG_MIN_BYTES:
                 try:
-                    subprocess.check_call([blackbox_decode_path, bbl_session])
+                    subprocess.check_call([BLACKBOX_DECODE_PATH, bbl_session])
                     output_path = os.path.join(self.tmp_path, bbl_session)
                     loglist.append(output_path)
                 except subprocess.CalledProcessError:

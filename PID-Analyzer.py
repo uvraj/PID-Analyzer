@@ -15,16 +15,16 @@ from matplotlib import pyplot, pyplot as plt
 
 from pidanalyzer.common import *
 from pidanalyzer import common, loaders, BANNER
-from pidanalyzer.csv_log import CsvLog
+from pidanalyzer.plotting import show_plots
 
 
-def analyze_file(path: str, plot_name: str, hide: bool, noise_bounds: list):
+def analyze_file(path: str, plot_name: str, hide: bool, noise_bounds: list = DEFAULT_NOISE_BOUNDS):
     tmp_path = os.path.join(os.path.dirname(path), plot_name)
     if not os.path.isdir(tmp_path):
         os.makedirs(tmp_path)
     loader = loaders.resolve(path, plot_name)
     for i, header in enumerate(loader.headers):
-        CsvLog(plot_name, header, noise_bounds, loader.data[i])
+        show_plots(plot_name, header, loader.data[i], noise_bounds)
         if hide:
             plt.cla()
             plt.clf()

@@ -66,7 +66,7 @@ class Loader(metaclass=ABCMeta):
 
 
 def _find_loaders() -> Iterator[Type[Loader]]:
-    """ly
+    """
     :return: an iterator of the available Loader classes
     """
     for key, value in loaders.__dict__.items():
@@ -78,7 +78,7 @@ def resolve(path: str, tmp_subdir: str) -> Loader:
     """Tries to find the appropriate Loader class for a file.
 
     :param path: path to the file to inspect
-    :param tmp_subdir: name of temp directory
+    :param tmp_subdir: name of temp directory for generated files
     :return: the resolved Loader
     :raise LoaderNotFoundError: raised when an appropriate Loader wasn't found
     """

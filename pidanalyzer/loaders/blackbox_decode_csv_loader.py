@@ -44,5 +44,5 @@ class BlackboxDecodeCsvLoader(BlackboxLogViewerCsvLoader):
         return tuple()
 
     def _read_data(self, path: str) -> Tuple[dict]:
-        # delegate to super class
+        # delegate to super class to parse CSV the same way
         return super()._read_data(path)
