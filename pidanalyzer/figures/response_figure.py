@@ -5,13 +5,13 @@ from matplotlib import pyplot as plt, rcParams
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
-from common import log
-from pidanalyzer import BANNER
-from trace import Trace
+from . import TEXTSIZE
+from .. import BANNER
+from ..common import log
+from ..trace import Trace
 
 
 def create(path: str, name: str, header: dict, traces: List[Trace], old_style: bool = False) -> Figure:
-    textsize = 7
     rcParams.update({'font.size': 9})
     log.info('Making PID plot...')
     fig = plt.figure('Response plot: Log number: ' + header['logNum'] + '          ' + path,
@@ -64,23 +64,23 @@ def create(path: str, name: str, header: dict, traces: List[Trace], old_style: b
             plt.xlabel('throttle in %')
             plt.xlim([0., 100.])
 
-        theCM = plt.cm.get_cmap('Blues')
-        theCM._init()
-        alphas = np.abs(np.linspace(0., 0.5, theCM.N, dtype=np.float64))
-        theCM._lut[:-3, -1] = alphas
+        cmap = plt.cm.get_cmap('Blues')
+        cmap._init()
+        alphas = np.abs(np.linspace(0., 0.5, cmap.N, dtype=np.float64))
+        cmap._lut[:-3, -1] = alphas
         ax3 = plt.subplot(gs1[17:, i * 10:i * 10 + 9])
-        plt.contourf(*trace.resp_low[2], cmap=theCM, linestyles=None, antialiased=True,
+        plt.contourf(*trace.resp_low[2], cmap=cmap, linestyles=None, antialiased=True,
                      levels=np.linspace(0, 1, 20, dtype=np.float64))
         plt.plot(trace.time_resp, trace.resp_low[0],
                  label=trace.name + ' step response ' + '(<' + str(int(Trace.threshold)) + ') '
                        + ' PID ' + header[trace.name + 'PID'])
 
         if trace.high_mask.sum() > 0:
-            theCM = plt.cm.get_cmap('Oranges')
-            theCM._init()
-            alphas = np.abs(np.linspace(0., 0.5, theCM.N, dtype=np.float64))
-            theCM._lut[:-3, -1] = alphas
-            plt.contourf(*trace.resp_high[2], cmap=theCM, linestyles=None, antialiased=True,
+            cmap = plt.cm.get_cmap('Oranges')
+            cmap._init()
+            alphas = np.abs(np.linspace(0., 0.5, cmap.N, dtype=np.float64))
+            cmap._lut[:-3, -1] = alphas
+            plt.contourf(*trace.resp_high[2], cmap=cmap, linestyles=None, antialiased=True,
                          levels=np.linspace(0, 1, 20, dtype=np.float64))
             plt.plot(trace.time_resp, trace.resp_high[0],
                      label=trace.name + ' step response ' + '(>' + str(int(Trace.threshold)) + ') '
@@ -108,7 +108,7 @@ def create(path: str, name: str, header: dict, traces: List[Trace], old_style: b
         + ' | dynThrPID: ' + header['dynThrottle'] + '| D-TermSP: ' + header[
             'dTermSetPoint'] + '| vbatComp: ' + header['vbatComp']
 
-    plt.text(0, 0, t, ha='left', va='center', rotation=90, color='grey', alpha=0.5, fontsize=textsize)
+    plt.text(0, 0, t, ha='left', va='center', rotation=90, color='grey', alpha=0.5, fontsize=TEXTSIZE)
     ax4.axis('off')
     log.info('Saving as image...')
     plt.savefig(path[:-13] + name + '_' + str(header['logNum']) + '_response.png')

@@ -5,9 +5,10 @@ from matplotlib import colors as colors, pyplot as plt, rcParams
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpec
 
-from common import log
-from pidanalyzer import BANNER
-from trace import Trace, to_mask
+from . import TEXTSIZE
+from .. import BANNER
+from ..common import log
+from ..trace import Trace, to_mask
 
 
 def _check_lims_list(lims: list) -> bool:
@@ -23,9 +24,7 @@ def _check_lims_list(lims: list) -> bool:
 
 
 def create(path: str, name: str, header: dict, traces: List[Trace], lims: list) -> Figure:
-    textsize = 7
     rcParams.update({'font.size': 9})
-
     log.info('Making noise plot...')
     title = 'Noise plot: Log number: {}{}{}'.format(header['logNum'], (10 * ' '), path)
     fig = plt.figure(title, figsize=(16, 8))
@@ -197,38 +196,30 @@ def create(path: str, name: str, header: dict, traces: List[Trace], lims: list) 
 
     meanfreq = 1. / (traces[0].time[1] - traces[0].time[0])
     ax4 = plt.subplot(gs1[12, -1])
-    t = BANNER + "| Betaflight: Version " + header['version'] + ' | Craftname: ' + header[
-        'craftName'] + \
-        ' | meanFreq: ' + str(int(meanfreq)) + ' | rcRate/Expo: ' + header['rcRate'] + '/' + header[
-            'rcExpo'] + '\nrcYawRate/Expo: ' + header['rcYawRate'] + '/' \
-        + header['rcYawExpo'] + ' | deadBand: ' + header['deadBand'] + ' | yawDeadBand: ' + \
-        header['yawDeadBand'] \
-        + ' | Throttle min/tpa/max: ' + header['minThrottle'] + '/' + header['tpa_breakpoint'] + '/' + \
-        header['maxThrottle'] \
-        + ' | dynThrPID: ' + header['dynThrottle'] + '| D-TermSP: ' + header[
-            'dTermSetPoint'] + '| vbatComp: ' + header['vbatComp'] + ' | debug ' + header[
-            'debug_mode']
+    t = BANNER + "| Betaflight: Version " + header['version'] + ' | Craftname: ' + header['craftName'] + \
+        ' | meanFreq: ' + str(int(meanfreq)) + ' | rcRate/Expo: ' + header['rcRate'] + '/' + header['rcExpo'] + '\n' + \
+        'rcYawRate/Expo: ' + header['rcYawRate'] + '/' + \
+        header['rcYawExpo'] + ' | deadBand: ' + header['deadBand'] + ' | yawDeadBand: ' + header['yawDeadBand'] + \
+        ' | Throttle min/tpa/max: ' + header['minThrottle'] + '/' + header['tpa_breakpoint'] + '/' + \
+        header['maxThrottle'] + ' | dynThrPID: ' + header['dynThrottle'] + '| D-TermSP: ' + header['dTermSetPoint'] + \
+        '| vbatComp: ' + header['vbatComp'] + ' | debug ' + header['debug_mode']
 
-    ax4.text(0, 0, t, ha='left', va='center', rotation=90, color='grey', alpha=0.5, fontsize=textsize)
+    ax4.text(0, 0, t, ha='left', va='center', rotation=90, color='grey', alpha=0.5, fontsize=TEXTSIZE)
     ax4.axis('off')
 
     ax5l = plt.subplot(gs1[:1, 24:27])
     ax5r = plt.subplot(gs1[:1, 27:30])
     ax5l.axis('off')
     ax5r.axis('off')
-    filt_settings_l = 'G lpf type: ' + header['gyro_lpf'] + ' at ' + header[
-        'gyro_lowpass_hz'] + '\n' + \
+    filt_settings_l = 'G lpf type: ' + header['gyro_lpf'] + ' at ' + header['gyro_lowpass_hz'] + '\n' + \
                       'G notch at: ' + header['gyro_notch_hz'] + ' cut ' + header[
-                          'gyro_notch_cutoff'] + '\n' \
-                                                 'gyro lpf 2: ' + header['gyro_lowpass_type']
-    filt_settings_r = '| D lpf type: ' + header['dterm_filter_type'] + ' at ' + header[
-        'dterm_lpf_hz'] + '\n' + \
-                      '| D notch at: ' + header['dterm_notch_hz'] + ' cut ' + header[
-                          'dterm_notch_cutoff'] + '\n' + \
+                      'gyro_notch_cutoff'] + '\n' + 'gyro lpf 2: ' + header['gyro_lowpass_type']
+    filt_settings_r = '| D lpf type: ' + header['dterm_filter_type'] + ' at ' + header['dterm_lpf_hz'] + '\n' + \
+                      '| D notch at: ' + header['dterm_notch_hz'] + ' cut ' + header['dterm_notch_cutoff'] + '\n' + \
                       '| Yaw lpf at: ' + header['yaw_lpf_hz']
 
-    ax5l.text(0, 0, filt_settings_l, ha='left', fontsize=textsize)
-    ax5r.text(0, 0, filt_settings_r, ha='left', fontsize=textsize)
+    ax5l.text(0, 0, filt_settings_l, ha='left', fontsize=TEXTSIZE)
+    ax5r.text(0, 0, filt_settings_r, ha='left', fontsize=TEXTSIZE)
 
     log.info('Saving as image...')
     plt.savefig(path[:-13] + name + '_' + str(header['logNum']) + '_noise.png')
