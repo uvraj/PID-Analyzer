@@ -54,7 +54,7 @@ def clean_path(path: str) -> str:
     return os.path.abspath(os.path.expanduser(strip_quotes(path)))
 
 
-def get_default_blackbox_decode_path() -> str:
+def get_blackbox_decode_path() -> str:
     cwd = os.path.dirname(os.path.dirname(__file__))
     config_file_path = os.path.join(cwd, CONFIG_FILE)
     if not os.path.exists(config_file_path):

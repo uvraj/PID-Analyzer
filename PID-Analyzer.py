@@ -105,7 +105,7 @@ if __name__ == "__main__":
     parser.add_argument(action='append', dest='log_paths', metavar="LOG_PATHS",
                         help='log file(s) to analyze or omit for interactive prompt')
     parser.add_argument('-n', '--name', default='tmp', help='plot name')
-    parser.add_argument('--blackbox_decode', metavar="PATH", default=get_default_blackbox_decode_path(),
+    parser.add_argument('--blackbox_decode', metavar="PATH", default=get_blackbox_decode_path(),
                         help='path to blackbox_decode tool')
     parser.add_argument('-d', '--hide', action='store_true',
                         help='hide plot window when done')

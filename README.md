@@ -71,6 +71,30 @@ Flo
 * refactored code to (more or less) follow Python conventions (WIP)
 * add config file (`config.ini`) to set the path for `blackbox_decode` permanently
 * use different default names for `blackbox_decode` executable on different platforms
+* changed command-line usage syntax (see below)
+
+### Usage
+
+```bash
+usage: PID-Analyzer.py [-h] [-n NAME] [--blackbox_decode PATH] [-d]
+                       [-b NOISE_BOUNDS]
+                       LOG_PATHS
+
+positional arguments:
+  LOG_PATHS             log file(s) to analyze or omit for interactive prompt
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -n NAME, --name NAME  plot name (default: tmp)
+  --blackbox_decode PATH
+                        path to blackbox_decode tool (default:
+                        /home/kiri/Projects/PID-Analyzer/blackbox_decode)
+  -d, --hide            hide plot window when done (default: False)
+  -b NOISE_BOUNDS, --noise-bounds NOISE_BOUNDS
+                        bounds of plots in noise analysis (use "auto" for
+                        autoscaling) (default:
+                        [[1.0,10.1],[1.0,100.0],[1.0,100.0],[0.0,4.0]])
+```
 
 ## Installation in a virtual environment
 
