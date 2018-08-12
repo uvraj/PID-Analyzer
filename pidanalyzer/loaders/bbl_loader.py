@@ -20,7 +20,7 @@ class BblLoader(Loader):
     @staticmethod
     def is_applicable(path: str) -> bool:
         # simply check file extension
-        return ".bbl" == os.path.splitext(path)[1].lower()
+        return ".bbl" == os.path.splitext(path)[1].lower() or ".bfl" == os.path.splitext(path)[1].lower()
 
     def _read_headers(self, path: str) -> Tuple[dict]:
         result = []
