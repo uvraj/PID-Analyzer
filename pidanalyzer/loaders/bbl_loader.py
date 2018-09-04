@@ -7,12 +7,14 @@ from ..common import *
 
 # minimum size of a log to parse in bytes
 LOG_MIN_BYTES = 500000
+# blackbox logs can have multiple extensions
+LOG_EXTENSIONS = [".bbl", ".bfl"]
 
 
 class BblLoader(Loader):
     """Loads Betaflight blackbox log files.
     """
-
+    
     def __init__(self, path: str, tmp_subdir: str = "tmp"):
         self.tmp_subdir = tmp_subdir
         super().__init__(path, tmp_subdir)
@@ -20,7 +22,7 @@ class BblLoader(Loader):
     @staticmethod
     def is_applicable(path: str) -> bool:
         # simply check file extension
-        return ".bbl" == os.path.splitext(path)[1].lower() or ".bfl" == os.path.splitext(path)[1].lower()
+        return os.path.splitext(path)[1].lower() in LOG_EXTENSIONS
 
     def _read_headers(self, path: str) -> Tuple[dict]:
         result = []
