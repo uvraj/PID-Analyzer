@@ -16,7 +16,7 @@ def _check_lims_list(lims: list) -> bool:
         log.info('noise_bounds is no valid list')
         return False
     lims = np.array(lims)
-    if np.shape(lims) == (4,2):
+    if np.shape(lims) == (4, 2):
         ll = lims[:, 1] - lims[:, 0]
         if np.sum(np.abs((ll - np.abs(ll)))) == 0:
             return True
