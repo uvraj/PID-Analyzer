@@ -14,7 +14,7 @@ def create_hist2d(x, y, weights, bins):  # bins[nx,ny]
 
     hist2d = np.histogram2d(throts.flatten(), freqs.flatten(),
                             range=[[0, 100], [y[0], y[-1]]],
-                            bins=bins, weights=weights.flatten(), normed=False)[0].transpose()
+                            bins=bins, weights=weights.flatten(), density=False)[0].transpose()
 
     hist2d = np.array(abs(hist2d), dtype=np.float64)
     hist2d_norm = np.copy(hist2d)
@@ -119,7 +119,7 @@ def stackspectrum(time, throttle, trace, window):
     weights = abs(spec.real)
     avr_thr = np.abs(thr).max(axis=1)
 
-    _hist2d = create_hist2d(avr_thr, freq, weights, [101, len(freq) / 4])
+    _hist2d = create_hist2d(avr_thr, freq, weights, [101, int(len(freq) / 4)])
 
     filt_width = 3  # width of gaussian smoothing for hist data
     hist2d_sm = gaussian_filter1d(_hist2d['hist2d_norm'], filt_width, axis=1, mode='constant')
@@ -173,7 +173,7 @@ class Trace:
         self.gyro = self.data['gyro']
         self.throttle = self.data['throttle']
         self.throt_hist, self.throt_scale = np.histogram(self.throttle, np.linspace(0, 100, 101, dtype=np.float64),
-                                                         normed=True)
+                                                         density=True)
 
         self.flen = stepcalc(self.time, Trace.framelen)  # array len corresponding to framelen in s
         self.rlen = stepcalc(self.time, Trace.resplen)  # array len corresponding to resplen in s
@@ -193,7 +193,7 @@ class Trace:
         # masking by setting trottle of unwanted traces to neg
         self.thr_response = create_hist2d(self.max_thr * (2. * (self.toolow_mask * self.resp_quality) - 1.),
                                           self.time_resp,
-                                          (self.spec_sm.transpose() * self.toolow_mask).transpose(), [101, self.rlen])
+                                          (self.spec_sm.transpose() * self.toolow_mask).transpose(), [101, self.rlen - 1])
 
         self.resp_low = self.weighted_mode_avr(self.spec_sm, self.low_mask * self.toolow_mask, [-1.5, 3.5], 1000)
         if self.high_mask.sum() > 0:
