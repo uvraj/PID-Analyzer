@@ -147,7 +147,7 @@ def low_high_mask(signal, threshold):
 
 
 class Trace:
-    framelen = 1.  # length of each single frame over which to compute response
+    framelen = 10.  # length of each single frame over which to compute response
     resplen = 0.5  # length of respose window
     cutfreq = 25.  # cutfreqency of what is considered as input
     tuk_alpha = 1.0  # alpha of tukey window, if used

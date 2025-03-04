@@ -10,3 +10,4 @@ config.ini
 *.event
 /blackbox_decode*
 /blackbox_decode.*
+logs/*

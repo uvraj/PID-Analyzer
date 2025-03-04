@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 from .common import log
-from .figures import noise_figure, response_figure
+from .figures import noise_figure, response_figure, small_response_figure
 from .trace import Trace
 
 
@@ -10,6 +10,7 @@ def show_plots(name: str, header: dict, data: dict, noise_bounds: list):
     log.info("CSV file: " + path)
     log.info('Processing:')
     traces_header, traces = _create_traces(header, data)
+    small_response_figure.create(path, name, traces_header, traces)
     response_figure.create(path, name, traces_header, traces)
     noise_figure.create(path, name, traces_header, traces, noise_bounds)
 
