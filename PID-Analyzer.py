@@ -17,6 +17,18 @@ from pidanalyzer.common import *
 from pidanalyzer import common, loaders, BANNER
 from pidanalyzer.plotting import show_plots
 
+# LaTeX-esque output
+
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": "cmr10",
+    "mathtext.fontset": "cm",
+    "axes.unicode_minus": False,
+    "axes.linewidth": 0.5,
+    "grid.linewidth": 0.3,
+    "lines.linewidth": 0.7,
+    # "text.usetex": True,
+})
 
 def analyze_file(path: str, plot_name: str, hide: bool, noise_bounds: list = DEFAULT_NOISE_BOUNDS):
     tmp_path = os.path.join(os.path.dirname(path), plot_name)

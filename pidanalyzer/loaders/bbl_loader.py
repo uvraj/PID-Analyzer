@@ -8,7 +8,7 @@ from ..common import *
 # minimum size of a log to parse in bytes
 LOG_MIN_BYTES = 500000
 # blackbox logs can have multiple extensions
-LOG_EXTENSIONS = [".bbl", ".bfl"]
+LOG_EXTENSIONS = [".bbl", ".bfl", ".txt"]
 
 
 class BblLoader(Loader):
